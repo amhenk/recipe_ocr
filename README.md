@@ -1,5 +1,5 @@
 <b>Dependencies<b>
 ----------------------------------------------------------------
-tesseract - Google's OCR Engine
-pytesseract - python tesseract wrapper
-PRAW - Python Reddit API Wrapper
+tesseract - Google's OCR Engine<br>
+pytesseract - python tesseract wrapper<br>
+PRAW - Python Reddit API Wrapper<br>
