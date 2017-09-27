@@ -27,7 +27,7 @@ def main():
 
     recipe = open(file_name, 'w')
 
-    print 'TODAY ON SHITTY RECIPES WE\'RE COOKING UP A DELICIOUS', recipe_name
+    print 'TODAY ON HORRIBLE RECIPES, WE\'RE COOKING UP A DELICIOUS', recipe_name
     print 'THIS IS DEFINITELY SOMETHING YOU\'RE GONNA WANT TO TRY'
     print '--'*14
     while(cap.isOpened()):
