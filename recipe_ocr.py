@@ -20,9 +20,12 @@ def is_unicode(s):
 def main():
 
     cap = cv2.VideoCapture(video)
-    frame_id = 1 
+    frame_id = 1
 
-    recipe_name = video[:video.rfind('.')]
+    video_name = video
+    if '/' in video:
+        video_name = video.split('/')[-1]
+    recipe_name = video_name[:video_name.rfind('.')]
     file_name = '{}{}_output.csv'.format(RECIPE_DIRECTORY, recipe_name)
 
     recipe = open(file_name, 'w')
@@ -39,9 +42,12 @@ def main():
         # Probably not a good idea for SSDs but tesseract seems to do
         # better with actual images rather than arrays
         frame_image_name = '{}{}_Frame_{}.jpeg'.format(FRAME_DIRECTORY, recipe_name, frame_id)
+        cv2.blur(frame, (5, 5))
         cv2.imwrite(frame_image_name, frame)
         text = is_unicode(pytesseract.image_to_string(Image.open(frame_image_name)))
         if text:
+            # TODO: might be good to do some preprocessing if some text is found.
+            # Then we can rerun it through tesseract and see if that helps
             line = 'Frame_{}\t{}'.format(frame_id, text.strip())
             print line
             recipe.write(line+'\n')
