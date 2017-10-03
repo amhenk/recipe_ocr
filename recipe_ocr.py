@@ -17,6 +17,39 @@ def is_unicode(s):
     return s
 
 
+def static_var(varname, value):
+    def decorate(func):
+        setattr(func, varname, value)
+        return func
+    return decorate
+
+
+# Probably not a good idea to do all of these writes for an SSD.
+# However, Tesseract seems to do better with actual images rather than 
+# images from arrays
+def process_frame(frame_data, image_name):
+    cv2.blur(frame_data, (5, 5))
+    cv2.imwrite(image_name, frame_data)
+
+    text = is_unicode(pytesseract.image_to_string(Image.open(image_name)))
+    if text:
+        # TODO: might be good to do some preprocessing if some text is found.
+        # Then we can rerun it through tesseract and see if that helps
+        return text
+    return None
+
+
+# Check string similarity
+def is_similar(a, b, threshold):
+    trim_a = a.strip()
+    trim_b = b.strip()
+    if trim_a == trim_b or trim_a in trim_b:
+        return True
+    elif len(trim_a) != len(trim_b):
+        return False
+    pass
+
+
 def main():
 
     cap = cv2.VideoCapture(video)
@@ -27,6 +60,7 @@ def main():
         video_name = video.split('/')[-1]
     recipe_name = video_name[:video_name.rfind('.')]
     file_name = '{}{}_output.csv'.format(RECIPE_DIRECTORY, recipe_name)
+    original_text = ''
 
     recipe = open(file_name, 'w')
 
@@ -39,18 +73,14 @@ def main():
             print '----- End Video -----'
             break
 
-        # Probably not a good idea for SSDs but tesseract seems to do
-        # better with actual images rather than arrays
-        frame_image_name = '{}{}_Frame_{}.jpeg'.format(FRAME_DIRECTORY, recipe_name, frame_id)
-        cv2.blur(frame, (5, 5))
-        cv2.imwrite(frame_image_name, frame)
-        text = is_unicode(pytesseract.image_to_string(Image.open(frame_image_name)))
-        if text:
-            # TODO: might be good to do some preprocessing if some text is found.
-            # Then we can rerun it through tesseract and see if that helps
-            line = 'Frame_{}\t{}'.format(frame_id, text.strip())
-            print line
-            recipe.write(line+'\n')
+        frame_image_name = '{}{}_Frame_{}.jpeg'.format(FRAME_DIRECTORY,
+                                                       recipe_name, frame_id)
+
+        # Feel like this function is getting a little TOO incharge
+        text = process_frame(frame, frame_image_name)
+        if text != None and not is_similar(text, original_text, .8):
+            print text
+            original_text = text
         else:
             # remove non-text images so we don't fill up the HDD
             os.remove(frame_image_name)
